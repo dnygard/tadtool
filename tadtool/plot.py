@@ -1,7 +1,7 @@
 from __future__ import division, print_function
 from abc import ABCMeta, abstractmethod
 import matplotlib as mpl
-mpl.use('TkAgg')
+mpl.use("Qt5Agg")
 from matplotlib.ticker import MaxNLocator, Formatter, Locator
 from matplotlib.widgets import Slider, Button
 import matplotlib.patches as patches
@@ -15,6 +15,7 @@ import copy
 import numpy as np
 from bisect import bisect_left
 from future.utils import string_types
+import numpy.ma as ma
 
 try:
     import Tkinter as tk
@@ -22,7 +23,6 @@ try:
 except ImportError:
     import tkinter as tk
     from tkinter import filedialog
-
 
 class BasePlotter(object):
 
@@ -367,7 +367,6 @@ class DataArrayPlot(BasePlotter1D):
         if self.colorbar is not None:
             self.colorbar.vmin = vmin
             self.colorbar.vmax = vmax
-            self.colorbar.draw_all()
 
     def update(self, window_size):
         self.window_size_line.set_ydata(window_size)
@@ -632,7 +631,7 @@ class TADtoolPlot(object):
         self.button_save_matrix.on_clicked(self.on_click_save_matrix)
 
         # add subplot content
-        max_value = np.nanpercentile(self.hic_matrix, self.max_percentile)
+        max_value = np.nanpercentile(np.array(ma.filled(self.hic_matrix, np.nan), copy=True), self.max_percentile)  # PATCHED
         init_value = .2*max_value
 
         # HI-C VMAX SLIDER
@@ -720,3 +719,4 @@ class TADtoolPlot(object):
                                                           self.regions)
             self.tad_plot.update(self.tad_regions)
             self.fig.canvas.draw()
+
